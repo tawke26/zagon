@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useChat } from '@ai-sdk/react';
+import { TextStreamChatTransport } from 'ai';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { parseAIResponse } from '@/lib/parse-cards';
@@ -26,6 +27,9 @@ export function ChatPanel({ onCardsGenerated, mentorMood }: ChatPanelProps) {
   const processedIds = useRef<Set<string>>(new Set());
 
   const { messages, sendMessage, status, error } = useChat({
+    transport: new TextStreamChatTransport({
+      api: '/api/chat',
+    }),
     messages: [
       {
         id: 'welcome',

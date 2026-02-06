@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       messages,
     });
 
-    return result.toUIMessageStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error('Chat API error:', error);
     return new Response(
