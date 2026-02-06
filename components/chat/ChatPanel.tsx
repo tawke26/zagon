@@ -25,7 +25,7 @@ export function ChatPanel({ onCardsGenerated, mentorMood }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const processedIds = useRef<Set<string>>(new Set());
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, error } = useChat({
     messages: [
       {
         id: 'welcome',
@@ -38,6 +38,9 @@ export function ChatPanel({ onCardsGenerated, mentorMood }: ChatPanelProps) {
         ],
       },
     ],
+    onError: (err) => {
+      console.error('Chat error:', err);
+    },
   });
 
   const isLoading = status === 'submitted' || status === 'streaming';
@@ -93,6 +96,13 @@ export function ChatPanel({ onCardsGenerated, mentorMood }: ChatPanelProps) {
             mood={mentorMood}
           />
         ))}
+        {error && (
+          <div className="flex gap-3">
+            <div className="bg-[var(--danger-dim)] border border-[var(--danger)] rounded-2xl px-4 py-3 text-sm text-[var(--text-secondary)]">
+              Something went wrong. Try again.
+            </div>
+          </div>
+        )}
         {isLoading && (messages[messages.length - 1]?.role as string) === 'user' && (
           <div className="flex gap-3">
             <div className="flex-shrink-0 mt-1">

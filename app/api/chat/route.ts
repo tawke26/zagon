@@ -7,14 +7,43 @@ const openrouter = createOpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-export async function POST(req: Request) {
-  const { messages } = await req.json();
-
-  const result = streamText({
-    model: openrouter('arcee-ai/trinity-large-preview:free'),
-    system: SYSTEM_PROMPT,
-    messages,
+// Convert UI SDK v6 parts-based messages to standard { role, content } format
+type MessageRole = 'system' | 'user' | 'assistant';
+function normalizeMessages(messages: any[]): { role: MessageRole; content: string }[] {
+  return messages.map((msg) => {
+    // If message already has content as string, use it
+    if (typeof msg.content === 'string') {
+      return { role: msg.role as MessageRole, content: msg.content };
+    }
+    // If message has parts array, extract text
+    if (Array.isArray(msg.parts)) {
+      const text = msg.parts
+        .filter((p: any) => p.type === 'text' && p.text)
+        .map((p: any) => p.text)
+        .join('');
+      return { role: msg.role as MessageRole, content: text };
+    }
+    return { role: msg.role as MessageRole, content: '' };
   });
+}
 
-  return result.toUIMessageStreamResponse();
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const messages = normalizeMessages(body.messages || []);
+
+    const result = streamText({
+      model: openrouter('arcee-ai/trinity-large-preview:free'),
+      system: SYSTEM_PROMPT,
+      messages,
+    });
+
+    return result.toUIMessageStreamResponse();
+  } catch (error) {
+    console.error('Chat API error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Failed to process chat request' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 }
