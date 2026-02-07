@@ -74,18 +74,26 @@ export default function BusinessCanvas({ data, stage }: BusinessCanvasProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="bg-[var(--surface)] border border-[var(--zagon-border)] rounded-2xl overflow-hidden"
+      className="relative rounded-2xl overflow-hidden border border-[rgba(255,214,0,0.15)]"
+      style={{
+        background:
+          'linear-gradient(135deg, rgba(255,214,0,0.04) 0%, var(--surface) 40%, rgba(255,214,0,0.02) 100%)',
+      }}
     >
-      <div className="h-1 bg-[var(--info)]" />
-      <div className="p-5 space-y-4">
+      {/* Accent left border strip */}
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[var(--zagon-accent)] via-[var(--zagon-accent)]/40 to-transparent" />
+
+      <div className="pl-5 pr-5 py-5 space-y-4">
         {/* Header */}
-        <div className="flex items-center gap-2">
-          <BarChart3 size={16} className="text-[var(--info)]" />
-          <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-[var(--accent-dim)] flex items-center justify-center">
+            <BarChart3 size={14} className="text-[var(--zagon-accent)]" />
+          </div>
+          <span className="font-display font-bold text-sm text-[var(--text)]">
             Business Model
           </span>
           {/* Progress dots */}
-          <div className="flex items-center gap-1 ml-2">
+          <div className="flex items-center gap-1 ml-1">
             {CANONICAL_TITLES.map((title, i) => {
               const block = filledMap.get(title.toLowerCase());
               const isFilled = block && block.content;
@@ -111,7 +119,7 @@ export default function BusinessCanvas({ data, stage }: BusinessCanvasProps) {
 
         {/* Empty state */}
         {isEmpty && (
-          <div className="text-center py-4">
+          <div className="text-center py-3">
             <p className="text-sm text-[var(--text-dim)]">
               Your business model will take shape as you talk
             </p>
@@ -159,7 +167,7 @@ export default function BusinessCanvas({ data, stage }: BusinessCanvasProps) {
                 <motion.div
                   key={title}
                   layoutId={title}
-                  className="rounded-xl p-3 border border-dashed border-[var(--zagon-border)] opacity-40"
+                  className="rounded-xl p-3 border border-dashed border-[var(--zagon-border)] opacity-30"
                 >
                   <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">
                     {title}
