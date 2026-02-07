@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const messages = normalizeMessages(body.messages || []);
 
     const result = streamText({
-      model: openrouter('arcee-ai/trinity-large-preview:free'),
+      model: openrouter('arcee-ai/trinity-mini:free'),
       system: SYSTEM_PROMPT,
       messages,
     });
