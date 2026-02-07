@@ -1,19 +1,47 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { TypewriterText } from '../onboarding/TypewriterText';
 
 interface LandingPageProps {
   onStart: () => void;
 }
 
 export function LandingPage({ onStart }: LandingPageProps) {
+  const [subtitleDone, setSubtitleDone] = useState(false);
+
   return (
     <div className="h-screen w-screen flex flex-col items-center justify-center bg-[var(--bg)] relative overflow-hidden">
       {/* Subtle radial glow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[600px] h-[600px] rounded-full bg-[var(--zagon-accent)] opacity-[0.04] blur-[120px]" />
       </div>
+
+      {/* Floating golden particles */}
+      {[...Array(10)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1.5 h-1.5 rounded-full bg-[var(--zagon-accent)]"
+          style={{
+            left: `${15 + i * 7}%`,
+            top: `${25 + (i % 4) * 14}%`,
+          }}
+          animate={{
+            y: [0, -30 - i * 5, 0],
+            x: [0, (i % 2 === 0 ? 10 : -10), 0],
+            opacity: [0.08, 0.25, 0.08],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{
+            duration: 4 + i * 0.6,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: i * 0.3,
+          }}
+        />
+      ))}
 
       {/* Character */}
       <motion.div
@@ -39,29 +67,61 @@ export function LandingPage({ onStart }: LandingPageProps) {
         ZAGON
       </motion.h1>
 
-      {/* Subtitle */}
-      <motion.p
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
-        className="text-[var(--text-secondary)] text-lg mt-3"
+      {/* Typewriter Subtitle */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.6 }}
+        className="text-[var(--text-secondary)] text-lg mt-3 h-7"
       >
-        Your AI startup mentor. From zero to one.
-      </motion.p>
+        <TypewriterText
+          text="Your AI startup mentor. From zero to one."
+          delay={800}
+          speed={35}
+          onComplete={() => setSubtitleDone(true)}
+        />
+      </motion.div>
 
-      {/* CTA Button */}
-      <motion.button
+      {/* CTA Button with pulsing glow */}
+      <motion.div
         initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.7 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={onStart}
-        className="mt-10 flex items-center gap-2 bg-[var(--zagon-accent)] text-[var(--bg)] px-8 py-4 rounded-xl font-display font-bold text-lg glow-accent hover:bg-[var(--accent-bright)] transition-colors"
+        animate={{ opacity: subtitleDone ? 1 : 0, y: subtitleDone ? 0 : 15 }}
+        transition={{ duration: 0.6 }}
+        className="mt-10 relative"
       >
-        START BUILDING
-        <ArrowRight size={20} />
-      </motion.button>
+        {/* Pulsing glow behind button */}
+        <motion.div
+          className="absolute inset-0 rounded-xl bg-[var(--zagon-accent)] blur-xl"
+          animate={{
+            opacity: [0.15, 0.35, 0.15],
+            scale: [1, 1.08, 1],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onStart}
+          className="relative flex items-center gap-2 bg-[var(--zagon-accent)] text-[var(--bg)] px-8 py-4 rounded-xl font-display font-bold text-lg hover:bg-[var(--accent-bright)] transition-colors cursor-pointer"
+        >
+          START BUILDING
+          <ArrowRight size={20} />
+        </motion.button>
+      </motion.div>
+
+      {/* Reassuring tagline */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: subtitleDone ? 1 : 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        className="mt-5 font-mono text-xs text-[var(--text-dim)]"
+      >
+        no experience needed — just bring an idea
+      </motion.p>
     </div>
   );
 }

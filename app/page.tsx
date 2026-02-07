@@ -3,9 +3,10 @@
 import { useReducer, useCallback, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LandingPage } from '@/components/landing/LandingPage';
+import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import { WorkspacePanel } from '@/components/workspace/WorkspacePanel';
-import { AppState, AppAction, ParsedCard } from '@/lib/types';
+import { AppState, AppAction, ParsedCard, OnboardingData } from '@/lib/types';
 
 const initialState: AppState = {
   stage: 'spark',
@@ -13,12 +14,16 @@ const initialState: AppState = {
   mentorMood: 'thinking',
   isLoading: false,
   started: false,
+  onboardingComplete: false,
+  onboardingData: { userName: '', ideaCategory: null },
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'START':
       return { ...state, started: true };
+    case 'COMPLETE_ONBOARDING':
+      return { ...state, onboardingComplete: true, onboardingData: action.data };
     case 'SET_STAGE':
       return { ...state, stage: action.stage };
     case 'ADD_CARDS':
@@ -40,10 +45,13 @@ export default function Home() {
     dispatch({ type: 'START' });
   };
 
+  const handleOnboardingComplete = useCallback((data: OnboardingData) => {
+    dispatch({ type: 'COMPLETE_ONBOARDING', data });
+  }, []);
+
   const handleCardsGenerated = useCallback((cards: ParsedCard[]) => {
     dispatch({ type: 'ADD_CARDS', cards });
 
-    // Auto-advance stage based on card type
     const stageMap: Record<string, string> = {
       problem_statement: 'hunt',
       research_evidence: 'who',
@@ -61,10 +69,17 @@ export default function Home() {
     }
   }, []);
 
+  // Determine which phase to show
+  const phase = !state.started
+    ? 'landing'
+    : !state.onboardingComplete
+      ? 'onboarding'
+      : 'app';
+
   return (
     <main className="h-screen w-screen overflow-hidden">
       <AnimatePresence mode="wait">
-        {!state.started ? (
+        {phase === 'landing' && (
           <motion.div
             key="landing"
             exit={{ opacity: 0, scale: 0.95 }}
@@ -72,12 +87,26 @@ export default function Home() {
           >
             <LandingPage onStart={handleStart} />
           </motion.div>
-        ) : (
+        )}
+
+        {phase === 'onboarding' && (
+          <motion.div
+            key="onboarding"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.4 }}
+          >
+            <OnboardingFlow onComplete={handleOnboardingComplete} />
+          </motion.div>
+        )}
+
+        {phase === 'app' && (
           <motion.div
             key="app"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
             className="h-full flex flex-col"
           >
             {/* Mobile tab switcher */}
@@ -109,8 +138,11 @@ export default function Home() {
 
             {/* Desktop split layout */}
             <div className="flex-1 flex overflow-hidden">
-              {/* Chat Panel */}
-              <div
+              {/* Chat Panel — slides in from left */}
+              <motion.div
+                initial={{ x: -40, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
                 className={`${
                   mobileView === 'chat' ? 'flex' : 'hidden'
                 } lg:flex w-full lg:w-[40%] border-r border-[var(--zagon-border)]`}
@@ -119,12 +151,16 @@ export default function Home() {
                   <ChatPanel
                     onCardsGenerated={handleCardsGenerated}
                     mentorMood={state.mentorMood}
+                    onboardingData={state.onboardingData}
                   />
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Workspace Panel */}
-              <div
+              {/* Workspace Panel — slides in from right */}
+              <motion.div
+                initial={{ x: 40, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.25 }}
                 className={`${
                   mobileView === 'workspace' ? 'flex' : 'hidden'
                 } lg:flex w-full lg:w-[60%]`}
@@ -135,7 +171,7 @@ export default function Home() {
                     currentStage={state.stage}
                   />
                 </div>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         )}

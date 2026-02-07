@@ -102,16 +102,24 @@ export interface ToolRecommendationData {
   icon: string;
 }
 
+export interface OnboardingData {
+  userName: string;
+  ideaCategory: string | null;
+}
+
 export interface AppState {
   stage: string;
   cards: ParsedCard[];
   mentorMood: MentorMood;
   isLoading: boolean;
   started: boolean;
+  onboardingComplete: boolean;
+  onboardingData: OnboardingData;
 }
 
 export type AppAction =
   | { type: 'START' }
+  | { type: 'COMPLETE_ONBOARDING'; data: OnboardingData }
   | { type: 'SET_STAGE'; stage: string }
   | { type: 'ADD_CARDS'; cards: ParsedCard[] }
   | { type: 'SET_MOOD'; mood: MentorMood }
