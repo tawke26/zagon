@@ -37,7 +37,7 @@ export function ChatPanel({ onCardsGenerated, mentorMood }: ChatPanelProps) {
         parts: [
           {
             type: 'text' as const,
-            text: "Hey. I'm your startup mentor. I'm an AI — I can research, analyze, design, and build faster than you. But I can't think for you. That's your job.\n\nHere's how this works: you tell me an idea, a problem you've noticed, something that bugs you. I'll help you turn it into something real. I'll challenge you, I'll generate things in seconds to show you what's possible, and then I'll ask you what I got wrong.\n\nSo — what's on your mind? What problem have you seen that nobody's solving right?",
+            text: "Hey! Welcome to ZAGON 👋\n\nI'm your startup mentor — think of me as a friend who's obsessed with building cool stuff. Together we're gonna take whatever idea is bouncing around in your head and turn it into something real.\n\nNo experience needed. No stupid questions. Just bring an idea, a problem you've noticed, or even just something that annoys you — and let's build from there.\n\nSo what's on your mind? 💡",
           },
         ],
       },

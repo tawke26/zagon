@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { FlaskConical, ArrowRight } from 'lucide-react';
 
 interface Feedback {
   quote: string;
@@ -11,111 +12,69 @@ interface ValidationCardProps {
   data: {
     people_tested: number;
     feedback: Feedback[];
-    patterns: string;
+    patterns: string[] | string;
     recommendation: string;
+    next_step?: string;
   };
 }
 
-const SENTIMENT_STYLES: Record<
-  Feedback['sentiment'],
-  { bg: string; text: string; label: string }
-> = {
-  positive: {
-    bg: 'rgba(0,230,118,0.15)',
-    text: 'var(--success)',
-    label: 'Positive',
-  },
-  negative: {
-    bg: 'var(--danger-dim)',
-    text: 'var(--danger)',
-    label: 'Negative',
-  },
-  neutral: {
-    bg: 'rgba(113,113,122,0.15)',
-    text: 'var(--text-dim)',
-    label: 'Neutral',
-  },
+const SENTIMENT_DOT: Record<string, string> = {
+  positive: 'bg-[var(--success)]',
+  negative: 'bg-[var(--danger)]',
+  neutral: 'bg-[var(--text-dim)]',
 };
 
 export default function ValidationCard({ data }: ValidationCardProps) {
+  const patterns = Array.isArray(data.patterns) ? data.patterns : [data.patterns];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="bg-[var(--surface)] border border-[var(--zagon-border)] rounded-2xl p-6 space-y-5"
+      className="bg-[var(--surface)] border border-[var(--zagon-border)] rounded-2xl overflow-hidden"
     >
-      {/* Header */}
-      <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">
-        VALIDATION RESULTS
-      </span>
-
-      {/* People tested stat */}
-      <div className="flex items-baseline gap-2">
-        <span className="font-mono text-4xl font-bold text-[var(--zagon-accent)]">
-          {data.people_tested}
-        </span>
-        <span className="font-mono text-sm text-[var(--text-muted)]">
-          people tested
-        </span>
-      </div>
-
-      {/* Feedback quotes */}
-      <div className="space-y-3">
-        <span className="font-mono text-[10px] tracking-widest uppercase text-[var(--text-dim)]">
-          FEEDBACK
-        </span>
-        <div className="space-y-2">
-          {data.feedback.map((item, index) => {
-            const style = SENTIMENT_STYLES[item.sentiment];
-            return (
-              <div
-                key={index}
-                className="flex items-start gap-3 bg-[var(--bg)] border border-[var(--zagon-border)] rounded-xl p-3"
-              >
-                {/* Sentiment dot */}
-                <div
-                  className="mt-1 w-2 h-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: `var(${style.text.replace('var(', '').replace(')', '')})` }}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                    &ldquo;{item.quote}&rdquo;
-                  </p>
-                </div>
-                <span
-                  className="shrink-0 px-2 py-0.5 rounded-md font-mono text-[10px] font-medium"
-                  style={{
-                    backgroundColor: style.bg,
-                    color: style.text,
-                  }}
-                >
-                  {style.label}
-                </span>
-              </div>
-            );
-          })}
+      <div className="h-1 bg-[var(--success)]" />
+      <div className="p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FlaskConical size={16} className="text-[var(--success)]" />
+            <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">Validation</span>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="font-mono text-2xl font-bold text-[var(--zagon-accent)]">{data.people_tested}</span>
+            <span className="font-mono text-[10px] text-[var(--text-muted)]">tested</span>
+          </div>
         </div>
-      </div>
 
-      {/* Patterns */}
-      <div className="space-y-1.5">
-        <span className="font-mono text-[10px] tracking-widest uppercase text-[var(--text-dim)]">
-          PATTERNS
-        </span>
-        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-          {data.patterns}
-        </p>
-      </div>
+        <div className="space-y-1.5">
+          {data.feedback.map((item, i) => (
+            <div key={i} className="flex items-start gap-2 bg-[var(--bg)] rounded-lg px-3 py-2">
+              <div className={`mt-1.5 w-2 h-2 shrink-0 rounded-full ${SENTIMENT_DOT[item.sentiment] || SENTIMENT_DOT.neutral}`} />
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                &ldquo;{item.quote}&rdquo;
+              </p>
+            </div>
+          ))}
+        </div>
 
-      {/* Recommendation */}
-      <div className="space-y-1.5 border-t border-[var(--zagon-border)] pt-4">
-        <span className="font-mono text-[10px] tracking-widest uppercase text-[var(--zagon-accent)]">
-          RECOMMENDATION
-        </span>
-        <p className="text-sm text-[var(--text)] leading-relaxed font-medium">
-          {data.recommendation}
-        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {patterns.map((p, i) => (
+            <span key={i} className="px-2.5 py-1 rounded-lg bg-[var(--accent-dim)] text-[var(--zagon-accent)] text-xs">{p}</span>
+          ))}
+        </div>
+
+        <p className="text-sm text-[var(--text)] font-medium">{data.recommendation}</p>
+
+        {data.next_step && (
+          <div className="flex items-start gap-2 bg-[var(--accent-dim)] rounded-xl p-3">
+            <ArrowRight size={14} className="text-[var(--zagon-accent)] mt-0.5 shrink-0" />
+            <div>
+              <span className="font-mono text-[10px] uppercase text-[var(--zagon-accent)] font-bold">Your next step</span>
+              <p className="text-xs text-[var(--text)] mt-0.5">{data.next_step}</p>
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );

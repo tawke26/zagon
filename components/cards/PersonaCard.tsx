@@ -1,98 +1,87 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { User, ArrowRight } from 'lucide-react';
 
 interface PersonaCardProps {
   data: {
     name: string;
     age: number;
     occupation: string;
-    pain_point: string;
+    pain_points?: string[];
+    pain_point?: string;
     daily_life: string;
     tried_before: string[];
-    why_failed: string;
+    why_failed?: string;
+    next_step?: string;
   };
 }
 
 export default function PersonaCard({ data }: PersonaCardProps) {
   const initials = data.name.charAt(0).toUpperCase();
+  const painPoints = data.pain_points || (data.pain_point ? [data.pain_point] : []);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="bg-[var(--surface)] border border-[var(--zagon-border)] rounded-2xl p-6 space-y-5"
+      className="bg-[var(--surface)] border border-[var(--zagon-border)] rounded-2xl overflow-hidden"
     >
-      {/* Header with avatar */}
-      <div className="flex items-center gap-4">
-        {/* Avatar circle */}
-        <div className="w-14 h-14 shrink-0 rounded-full bg-[var(--accent-dim)] flex items-center justify-center">
-          <span className="font-display font-bold text-xl text-[var(--zagon-accent)]">
-            {initials}
-          </span>
+      <div className="bg-[var(--accent-dim)] px-5 py-4 flex items-center gap-4">
+        <div className="w-12 h-12 shrink-0 rounded-full bg-[var(--zagon-accent)] flex items-center justify-center">
+          <span className="font-display font-bold text-lg text-[var(--bg)]">{initials}</span>
         </div>
-
-        {/* Name, age, occupation */}
         <div>
-          <h3 className="font-display font-bold text-lg text-[var(--text)]">
-            {data.name}
-            <span className="ml-2 font-mono text-sm font-normal text-[var(--text-muted)]">
-              {data.age}
-            </span>
+          <h3 className="font-display font-bold text-base text-[var(--text)]">
+            {data.name}, {data.age}
           </h3>
-          <p className="font-mono text-xs text-[var(--text-dim)]">
-            {data.occupation}
-          </p>
+          <p className="text-xs text-[var(--text-secondary)]">{data.occupation}</p>
         </div>
+        <User size={16} className="ml-auto text-[var(--text-dim)]" />
       </div>
 
-      {/* The Pain */}
-      <div className="space-y-1.5">
-        <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">
-          THE PAIN
-        </span>
-        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-          {data.pain_point}
-        </p>
-      </div>
+      <div className="p-5 space-y-4">
+        {painPoints.length > 0 && (
+          <div className="space-y-2">
+            <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">Frustrations</span>
+            <div className="flex flex-wrap gap-1.5">
+              {painPoints.map((point, i) => (
+                <span key={i} className="px-2.5 py-1 rounded-lg bg-[var(--danger-dim)] text-[var(--danger)] text-xs">
+                  {point}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* A Day in Their Life */}
-      <div className="space-y-1.5">
-        <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">
-          A DAY IN THEIR LIFE
-        </span>
-        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-          {data.daily_life}
-        </p>
-      </div>
+        <div className="space-y-1">
+          <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">Their Day</span>
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{data.daily_life}</p>
+        </div>
 
-      {/* What They've Tried */}
-      <div className="space-y-2">
-        <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">
-          WHAT THEY&apos;VE TRIED
-        </span>
-        <ul className="space-y-1.5">
-          {data.tried_before.map((item, index) => (
-            <li
-              key={index}
-              className="flex items-start gap-2 text-sm text-[var(--text-secondary)]"
-            >
-              <span className="mt-1.5 w-1.5 h-1.5 shrink-0 rounded-full bg-[var(--text-dim)]" />
-              {item}
-            </li>
-          ))}
-        </ul>
-      </div>
+        {data.tried_before.length > 0 && (
+          <div className="space-y-1.5">
+            <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">Already Tried</span>
+            <div className="flex flex-wrap gap-1.5">
+              {data.tried_before.map((item, i) => (
+                <span key={i} className="px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-[var(--zagon-border)] text-xs text-[var(--text-secondary)]">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* Why It Failed */}
-      <div className="space-y-1.5 border-t border-[var(--zagon-border)] pt-4">
-        <span className="font-mono text-xs tracking-widest uppercase text-[var(--danger)]">
-          WHY IT FAILED
-        </span>
-        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-          {data.why_failed}
-        </p>
+        {data.next_step && (
+          <div className="flex items-start gap-2 bg-[var(--accent-dim)] rounded-xl p-3">
+            <ArrowRight size={14} className="text-[var(--zagon-accent)] mt-0.5 shrink-0" />
+            <div>
+              <span className="font-mono text-[10px] uppercase text-[var(--zagon-accent)] font-bold">Your next step</span>
+              <p className="text-xs text-[var(--text)] mt-0.5">{data.next_step}</p>
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );
