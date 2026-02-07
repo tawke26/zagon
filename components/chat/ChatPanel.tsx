@@ -49,9 +49,14 @@ export function ChatPanel({ onCardsGenerated, mentorMood }: ChatPanelProps) {
 
   const isLoading = status === 'submitted' || status === 'streaming';
 
-  // Parse cards from completed AI messages
+  // Parse cards from completed AI messages (only after enough conversation)
   useEffect(() => {
     if (isLoading) return; // Wait until streaming is done
+
+    // Count user messages (excluding welcome). Suppress cards until at least 3 user messages.
+    const userMessageCount = messages.filter((m) => (m.role as string) === 'user').length;
+    if (userMessageCount < 3) return;
+
     messages.forEach((msg) => {
       if (msg.role === 'assistant' && !processedIds.current.has(msg.id)) {
         const text = getTextFromParts(msg.parts as Array<{ type: string; text?: string }>);
