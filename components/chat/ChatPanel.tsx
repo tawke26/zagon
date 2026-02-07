@@ -6,7 +6,7 @@ import { TextStreamChatTransport } from 'ai';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { parseAIResponse } from '@/lib/parse-cards';
-import { MentorMood, ParsedCard, OnboardingData } from '@/lib/types';
+import { MentorMood, ParsedCard, OnboardingData, QuickOption } from '@/lib/types';
 import { Sparkles } from 'lucide-react';
 
 interface ChatPanelProps {
@@ -34,7 +34,7 @@ function buildWelcomeMessage(data?: OnboardingData): string {
     msg += ` So you wanna build ${category.toLowerCase()} — nice.`;
   }
 
-  msg += ` Tell me about your idea, or a problem you want to solve 💡`;
+  msg += ` Tell me about your idea, or a problem you want to solve`;
 
   return msg;
 }
@@ -70,21 +70,27 @@ export function ChatPanel({ onCardsGenerated, mentorMood, onboardingData }: Chat
 
   const isLoading = status === 'submitted' || status === 'streaming';
 
-  // Parse cards from completed AI messages (only after enough conversation)
+  // Parse cards from completed AI messages
   useEffect(() => {
     if (isLoading) return; // Wait until streaming is done
 
-    // Count user messages (excluding welcome). Suppress cards until at least 3 user messages.
+    // Count user messages (excluding welcome)
     const userMessageCount = messages.filter((m) => (m.role as string) === 'user').length;
-    if (userMessageCount < 3) return;
 
     messages.forEach((msg) => {
       if (msg.role === 'assistant' && !processedIds.current.has(msg.id)) {
         const text = getTextFromParts(msg.parts as Array<{ type: string; text?: string }>);
         const { cards } = parseAIResponse(text);
-        if (cards.length > 0) {
+
+        // Allow business_model cards through early, suppress others until 3+ user messages
+        const allowedCards =
+          userMessageCount < 3
+            ? cards.filter((c) => c.type === 'business_model')
+            : cards;
+
+        if (allowedCards.length > 0) {
           processedIds.current.add(msg.id);
-          onCardsGenerated(cards);
+          onCardsGenerated(allowedCards);
         }
       }
     });
@@ -101,11 +107,26 @@ export function ChatPanel({ onCardsGenerated, mentorMood, onboardingData }: Chat
     sendMessage({ text });
   };
 
-  // Get display text for a message (strips card blocks)
-  const getDisplayText = (parts: Array<{ type: string; text?: string }>): string => {
+  // Get display text and options for a message (strips card and options blocks)
+  const getDisplayAndOptions = (
+    parts: Array<{ type: string; text?: string }>
+  ): { text: string; options: QuickOption[] } => {
     const raw = getTextFromParts(parts);
-    return parseAIResponse(raw).text;
+    const parsed = parseAIResponse(raw);
+    return { text: parsed.text, options: parsed.options };
   };
+
+  // Find the last assistant message index to show options only on it
+  const lastAssistantIndex = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'assistant') return i;
+    }
+    return -1;
+  })();
+
+  // Only show options on the last assistant message if no user message came after it
+  const lastMessageIsAssistant =
+    messages.length > 0 && (messages[messages.length - 1].role as string) === 'assistant';
 
   return (
     <div className="flex flex-col h-full bg-[var(--bg)]">
@@ -118,15 +139,27 @@ export function ChatPanel({ onCardsGenerated, mentorMood, onboardingData }: Chat
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-        {messages.map((msg) => (
-          <ChatMessage
-            key={msg.id}
-            role={msg.role as 'user' | 'assistant'}
-            content={getDisplayText(msg.parts as Array<{ type: string; text?: string }>)}
-            mood={mentorMood}
-            isWelcome={msg.id === 'welcome'}
-          />
-        ))}
+        {messages.map((msg, index) => {
+          const { text, options } = getDisplayAndOptions(
+            msg.parts as Array<{ type: string; text?: string }>
+          );
+
+          // Only show options on the very last assistant message, and only if user hasn't replied
+          const showOptions =
+            index === lastAssistantIndex && lastMessageIsAssistant && !isLoading;
+
+          return (
+            <ChatMessage
+              key={msg.id}
+              role={msg.role as 'user' | 'assistant'}
+              content={text}
+              mood={mentorMood}
+              isWelcome={msg.id === 'welcome'}
+              options={showOptions ? options : undefined}
+              onOptionClick={showOptions ? handleSend : undefined}
+            />
+          );
+        })}
         {error && (
           <div className="flex gap-3">
             <div className="bg-[var(--danger-dim)] border border-[var(--danger)] rounded-2xl px-4 py-3 text-sm text-[var(--text-secondary)]">

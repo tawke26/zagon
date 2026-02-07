@@ -7,10 +7,19 @@ import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import { WorkspacePanel } from '@/components/workspace/WorkspacePanel';
 import { AppState, AppAction, ParsedCard, OnboardingData } from '@/lib/types';
+import { mergeBusinessModelCards } from '@/lib/merge-business-model';
 
 const initialState: AppState = {
   stage: 'spark',
-  cards: [],
+  cards: [
+    {
+      type: 'business_model',
+      data: {
+        blocks: [],
+        next_step: 'Start talking about your idea to fill this in',
+      },
+    },
+  ],
   mentorMood: 'thinking',
   isLoading: false,
   started: false,
@@ -26,8 +35,29 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, onboardingComplete: true, onboardingData: action.data };
     case 'SET_STAGE':
       return { ...state, stage: action.stage };
-    case 'ADD_CARDS':
-      return { ...state, cards: [...state.cards, ...action.cards] };
+    case 'ADD_CARDS': {
+      let updatedCards = [...state.cards];
+      const cardsToAppend: ParsedCard[] = [];
+
+      for (const card of action.cards) {
+        if (card.type === 'business_model') {
+          // Merge into existing business_model card instead of creating a duplicate
+          const existingIndex = updatedCards.findIndex((c) => c.type === 'business_model');
+          if (existingIndex >= 0) {
+            updatedCards[existingIndex] = mergeBusinessModelCards(
+              updatedCards[existingIndex],
+              card
+            );
+          } else {
+            cardsToAppend.push(card);
+          }
+        } else {
+          cardsToAppend.push(card);
+        }
+      }
+
+      return { ...state, cards: [...updatedCards, ...cardsToAppend] };
+    }
     case 'SET_MOOD':
       return { ...state, mentorMood: action.mood };
     case 'SET_LOADING':
@@ -56,7 +86,7 @@ export default function Home() {
       problem_statement: 'hunt',
       research_evidence: 'who',
       persona: 'shape',
-      business_model: 'look',
+      // business_model is excluded — it can come at any stage and shouldn't force-advance
       brand_board: 'build',
       prototype: 'test',
       validation: 'test',

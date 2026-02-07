@@ -23,9 +23,15 @@ export interface ParsedCard {
   data: Record<string, unknown>;
 }
 
+export interface QuickOption {
+  label: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+}
+
 export interface ParsedResponse {
   text: string;
   cards: ParsedCard[];
+  options: QuickOption[];
 }
 
 // Card data types
