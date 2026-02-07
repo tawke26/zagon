@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     console.log('[CHAT API] Messages count:', messages.length, 'Experience:', experienceLevel);
 
     const result = streamText({
-      model: openrouter.chat('deepseek/deepseek-r1-0528:free'),
+      model: openrouter.chat('deepseek/deepseek-v3.2'),
       system: systemPrompt,
       messages,
     });
