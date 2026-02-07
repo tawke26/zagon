@@ -23,33 +23,20 @@ function getTextFromParts(parts: Array<{ type: string; text?: string }>): string
     .join('');
 }
 
-// Build a personalized welcome message based on onboarding data
+// Build a short personalized welcome message
 function buildWelcomeMessage(data?: OnboardingData): string {
-  const name = data?.userName || '';
+  const name = data?.userName || 'there';
   const category = data?.ideaCategory;
 
-  if (!name) {
-    return "Hey! Welcome to ZAGON 👋\n\nI'm your startup mentor — think of me as a friend who's obsessed with building cool stuff. Together we're gonna take whatever idea is bouncing around in your head and turn it into something real.\n\nNo experience needed. No stupid questions. Just bring an idea, a problem you've noticed, or even just something that annoys you — and let's build from there.\n\nSo what's on your mind? 💡";
+  let msg = `Hey ${name}! I'm your startup mentor.`;
+
+  if (category && category !== 'Something else') {
+    msg += ` So you wanna build ${category.toLowerCase()} — nice.`;
   }
 
-  let greeting = `Hey ${name}! Welcome to ZAGON 👋\n\n`;
+  msg += ` Tell me about your idea, or a problem you want to solve 💡`;
 
-  if (category) {
-    const categoryLines: Record<string, string> = {
-      'An App': `So you're thinking about building an app — love it! 📱 Apps are everywhere and there's always room for one that actually solves a real problem.`,
-      'A Product': `So you want to build a product — that's awesome! 🛍️ Physical or digital, the best products start with a problem worth solving.`,
-      'A Website': `A website, nice! 🌐 Whether it's a platform, a tool, or something totally new — we'll figure out exactly what makes yours special.`,
-      'A Service': `Building a service — smart move! 📢 Services are a great way to start because you can iterate fast and learn from real people.`,
-      'A Game': `A game! 🎮 That's exciting. Games are one of the hardest things to build but also one of the most rewarding. Let's make it happen.`,
-      'Something else': `Something unique brewing in your head? ✨ I love the mystery. Let's figure out what it is and how to make it real.`,
-    };
-    greeting += (categoryLines[category] || `Interesting choice — ${category.toLowerCase()}! Let's figure out how to make it happen.`) + '\n\n';
-  }
-
-  greeting += `I'm your startup mentor — think of me as a friend who's been through the building process before. No experience needed, no stupid questions. We'll go step by step.\n\n`;
-  greeting += `So tell me — what's the idea? Or if you don't have one yet, what's a problem or frustration you've noticed in the world? 💡`;
-
-  return greeting;
+  return msg;
 }
 
 export function ChatPanel({ onCardsGenerated, mentorMood, onboardingData }: ChatPanelProps) {
@@ -62,6 +49,7 @@ export function ChatPanel({ onCardsGenerated, mentorMood, onboardingData }: Chat
   const { messages, sendMessage, status, error } = useChat({
     transport: new TextStreamChatTransport({
       api: '/api/chat',
+      body: { experienceLevel: onboardingData?.experienceLevel },
     }),
     messages: [
       {

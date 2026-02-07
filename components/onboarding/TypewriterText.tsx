@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 interface TypewriterTextProps {
@@ -21,6 +21,11 @@ export function TypewriterText({
   const [displayed, setDisplayed] = useState('');
   const [started, setStarted] = useState(false);
   const [done, setDone] = useState(false);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     const delayTimer = setTimeout(() => setStarted(true), delay);
@@ -37,12 +42,12 @@ export function TypewriterText({
       if (i >= text.length) {
         clearInterval(interval);
         setDone(true);
-        onComplete?.();
+        onCompleteRef.current?.();
       }
     }, speed);
 
     return () => clearInterval(interval);
-  }, [started, text, speed, onComplete]);
+  }, [started, text, speed]);
 
   if (!started) return null;
 

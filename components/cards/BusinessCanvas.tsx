@@ -1,7 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { BarChart3, ArrowRight } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
+import { StageBadge } from './StageBadge';
+import { NextStepBanner } from './NextStepBanner';
 
 interface Block {
   title: string;
@@ -20,24 +22,25 @@ interface BusinessCanvasProps {
     cost_structure?: string;
     next_step?: string;
   };
+  stage?: { name: string; icon: string };
 }
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   validated: { bg: 'rgba(0,230,118,0.15)', text: 'var(--success)', label: '✓ Validated' },
-  assumption: { bg: 'rgba(255,214,0,0.15)', text: 'var(--zagon-accent)', label: '? Assumption' },
+  assumption: { bg: 'rgba(255,214,0,0.15)', text: 'var(--zagon-accent)', label: '? Guess' },
   risky: { bg: 'var(--danger-dim)', text: 'var(--danger)', label: '⚠ Risky' },
 };
 
-export default function BusinessCanvas({ data }: BusinessCanvasProps) {
+export default function BusinessCanvas({ data, stage }: BusinessCanvasProps) {
   const blocks: Block[] = data.blocks ? [...data.blocks] : [];
   if (blocks.length === 0 && data.value_prop) {
     const flat = [
-      { title: 'Value Proposition', content: data.value_prop, status: 'assumption' as const },
-      { title: 'Customer Segment', content: data.customer_segment || '', status: 'assumption' as const },
-      { title: 'Channels', content: data.channels || '', status: 'assumption' as const },
-      { title: 'Revenue Model', content: data.revenue_model || '', status: 'assumption' as const },
-      { title: 'Key Activities', content: data.key_activities || '', status: 'assumption' as const },
-      { title: 'Cost Structure', content: data.cost_structure || '', status: 'assumption' as const },
+      { title: 'What you offer', content: data.value_prop, status: 'assumption' as const },
+      { title: 'Who buys it', content: data.customer_segment || '', status: 'assumption' as const },
+      { title: 'How they find you', content: data.channels || '', status: 'assumption' as const },
+      { title: 'How you make money', content: data.revenue_model || '', status: 'assumption' as const },
+      { title: 'What you do', content: data.key_activities || '', status: 'assumption' as const },
+      { title: 'What it costs', content: data.cost_structure || '', status: 'assumption' as const },
     ].filter(b => b.content);
     blocks.push(...flat);
   }
@@ -54,8 +57,13 @@ export default function BusinessCanvas({ data }: BusinessCanvasProps) {
         <div className="flex items-center gap-2">
           <BarChart3 size={16} className="text-[var(--info)]" />
           <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">
-            Business Canvas
+            Business Model
           </span>
+          {stage && (
+            <div className="ml-auto">
+              <StageBadge stageName={stage.name} stageIcon={stage.icon} />
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -75,15 +83,7 @@ export default function BusinessCanvas({ data }: BusinessCanvasProps) {
           })}
         </div>
 
-        {data.next_step && (
-          <div className="flex items-start gap-2 bg-[var(--accent-dim)] rounded-xl p-3">
-            <ArrowRight size={14} className="text-[var(--zagon-accent)] mt-0.5 shrink-0" />
-            <div>
-              <span className="font-mono text-[10px] uppercase text-[var(--zagon-accent)] font-bold">Your next step</span>
-              <p className="text-xs text-[var(--text)] mt-0.5">{data.next_step}</p>
-            </div>
-          </div>
-        )}
+        {data.next_step && <NextStepBanner step={data.next_step} />}
       </div>
     </motion.div>
   );

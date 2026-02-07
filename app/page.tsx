@@ -15,7 +15,7 @@ const initialState: AppState = {
   isLoading: false,
   started: false,
   onboardingComplete: false,
-  onboardingData: { userName: '', ideaCategory: null },
+  onboardingData: { userName: '', ideaCategory: null, experienceLevel: null },
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {

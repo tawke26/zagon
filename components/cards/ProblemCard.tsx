@@ -1,7 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { AlertCircle, ArrowRight } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import { StageBadge } from './StageBadge';
+import { NextStepBanner } from './NextStepBanner';
 
 interface ProblemCardProps {
   data: {
@@ -11,9 +13,10 @@ interface ProblemCardProps {
     why_now: string;
     next_step?: string;
   };
+  stage?: { name: string; icon: string };
 }
 
-export default function ProblemCard({ data }: ProblemCardProps) {
+export default function ProblemCard({ data, stage }: ProblemCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -29,6 +32,11 @@ export default function ProblemCard({ data }: ProblemCardProps) {
           <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">
             Problem Defined
           </span>
+          {stage && (
+            <div className="ml-auto">
+              <StageBadge stageName={stage.name} stageIcon={stage.icon} />
+            </div>
+          )}
         </div>
 
         <h2 className="font-display font-bold text-lg text-[var(--text)] leading-snug">
@@ -50,17 +58,7 @@ export default function ProblemCard({ data }: ProblemCardProps) {
           </div>
         </div>
 
-        {data.next_step && (
-          <div className="flex items-start gap-2 bg-[var(--accent-dim)] rounded-xl p-3">
-            <ArrowRight size={14} className="text-[var(--zagon-accent)] mt-0.5 shrink-0" />
-            <div>
-              <span className="font-mono text-[10px] uppercase text-[var(--zagon-accent)] font-bold">
-                Your next step
-              </span>
-              <p className="text-xs text-[var(--text)] mt-0.5">{data.next_step}</p>
-            </div>
-          </div>
-        )}
+        {data.next_step && <NextStepBanner step={data.next_step} />}
       </div>
     </motion.div>
   );

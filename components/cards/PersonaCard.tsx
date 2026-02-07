@@ -1,7 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { User, ArrowRight } from 'lucide-react';
+import { User } from 'lucide-react';
+import { StageBadge } from './StageBadge';
+import { NextStepBanner } from './NextStepBanner';
 
 interface PersonaCardProps {
   data: {
@@ -15,9 +17,10 @@ interface PersonaCardProps {
     why_failed?: string;
     next_step?: string;
   };
+  stage?: { name: string; icon: string };
 }
 
-export default function PersonaCard({ data }: PersonaCardProps) {
+export default function PersonaCard({ data, stage }: PersonaCardProps) {
   const initials = data.name.charAt(0).toUpperCase();
   const painPoints = data.pain_points || (data.pain_point ? [data.pain_point] : []);
 
@@ -38,13 +41,16 @@ export default function PersonaCard({ data }: PersonaCardProps) {
           </h3>
           <p className="text-xs text-[var(--text-secondary)]">{data.occupation}</p>
         </div>
-        <User size={16} className="ml-auto text-[var(--text-dim)]" />
+        <div className="ml-auto flex items-center gap-2">
+          {stage && <StageBadge stageName={stage.name} stageIcon={stage.icon} />}
+          <User size={16} className="text-[var(--text-dim)]" />
+        </div>
       </div>
 
       <div className="p-5 space-y-4">
         {painPoints.length > 0 && (
           <div className="space-y-2">
-            <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">Frustrations</span>
+            <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">What bugs them</span>
             <div className="flex flex-wrap gap-1.5">
               {painPoints.map((point, i) => (
                 <span key={i} className="px-2.5 py-1 rounded-lg bg-[var(--danger-dim)] text-[var(--danger)] text-xs">
@@ -56,32 +62,29 @@ export default function PersonaCard({ data }: PersonaCardProps) {
         )}
 
         <div className="space-y-1">
-          <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">Their Day</span>
+          <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">A day in their life</span>
           <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{data.daily_life}</p>
         </div>
 
         {data.tried_before.length > 0 && (
           <div className="space-y-1.5">
-            <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">Already Tried</span>
+            <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">Already tried</span>
             <div className="flex flex-wrap gap-1.5">
-              {data.tried_before.map((item, i) => (
+              {data.tried_before.slice(0, 3).map((item, i) => (
                 <span key={i} className="px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-[var(--zagon-border)] text-xs text-[var(--text-secondary)]">
                   {item}
                 </span>
               ))}
+              {data.tried_before.length > 3 && (
+                <span className="px-2.5 py-1 rounded-lg bg-[var(--bg)] border border-[var(--zagon-border)] text-xs text-[var(--text-dim)]">
+                  +{data.tried_before.length - 3} more
+                </span>
+              )}
             </div>
           </div>
         )}
 
-        {data.next_step && (
-          <div className="flex items-start gap-2 bg-[var(--accent-dim)] rounded-xl p-3">
-            <ArrowRight size={14} className="text-[var(--zagon-accent)] mt-0.5 shrink-0" />
-            <div>
-              <span className="font-mono text-[10px] uppercase text-[var(--zagon-accent)] font-bold">Your next step</span>
-              <p className="text-xs text-[var(--text)] mt-0.5">{data.next_step}</p>
-            </div>
-          </div>
-        )}
+        {data.next_step && <NextStepBanner step={data.next_step} />}
       </div>
     </motion.div>
   );

@@ -1,5 +1,21 @@
 import { Stage } from './types';
 
+export const CARD_STAGE_MAP: Record<string, string> = {
+  problem_statement: 'spark',
+  research_evidence: 'hunt',
+  persona: 'who',
+  business_model: 'shape',
+  brand_board: 'look',
+  prototype: 'build',
+  validation: 'test',
+  tool_recommendation: '',
+};
+
+export function getStageForCard(cardType: string, currentStage: string): Stage | undefined {
+  const stageId = CARD_STAGE_MAP[cardType] || currentStage;
+  return STAGES.find((s) => s.id === stageId);
+}
+
 export const STAGES: Stage[] = [
   {
     id: 'spark',

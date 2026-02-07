@@ -1,6 +1,7 @@
 'use client';
 
 import { ParsedCard } from '@/lib/types';
+import { getStageForCard } from '@/lib/stages';
 import { EmptyState } from './EmptyState';
 import { StageProgress } from './StageProgress';
 import ProblemCard from '../cards/ProblemCard';
@@ -17,25 +18,28 @@ interface WorkspacePanelProps {
   currentStage: string;
 }
 
-function renderCard(card: ParsedCard, index: number) {
+function renderCard(card: ParsedCard, index: number, currentStage: string) {
   const key = `${card.type}-${index}`;
+  const stageInfo = getStageForCard(card.type, currentStage);
+  const stage = stageInfo ? { name: stageInfo.name, icon: stageInfo.icon } : undefined;
+
   switch (card.type) {
     case 'problem_statement':
-      return <ProblemCard key={key} data={card.data as any} />;
+      return <ProblemCard key={key} data={card.data as any} stage={stage} />;
     case 'research_evidence':
-      return <ResearchWall key={key} data={card.data as any} />;
+      return <ResearchWall key={key} data={card.data as any} stage={stage} />;
     case 'persona':
-      return <PersonaCard key={key} data={card.data as any} />;
+      return <PersonaCard key={key} data={card.data as any} stage={stage} />;
     case 'business_model':
-      return <BusinessCanvas key={key} data={card.data as any} />;
+      return <BusinessCanvas key={key} data={card.data as any} stage={stage} />;
     case 'brand_board':
-      return <BrandBoard key={key} data={card.data as any} />;
+      return <BrandBoard key={key} data={card.data as any} stage={stage} />;
     case 'prototype':
-      return <PrototypeCard key={key} data={card.data as any} />;
+      return <PrototypeCard key={key} data={card.data as any} stage={stage} />;
     case 'validation':
-      return <ValidationCard key={key} data={card.data as any} />;
+      return <ValidationCard key={key} data={card.data as any} stage={stage} />;
     case 'tool_recommendation':
-      return <ToolCard key={key} data={card.data as any} />;
+      return <ToolCard key={key} data={card.data as any} stage={stage} />;
     default:
       return null;
   }
@@ -51,7 +55,7 @@ export function WorkspacePanel({ cards, currentStage }: WorkspacePanelProps) {
           <EmptyState />
         ) : (
           <div className="p-6 space-y-4">
-            {cards.map((card, i) => renderCard(card, i))}
+            {cards.map((card, i) => renderCard(card, i, currentStage))}
           </div>
         )}
       </div>

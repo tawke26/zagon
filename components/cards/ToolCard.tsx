@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { ExternalLink, Search, Palette, Code, Layout, Megaphone, BarChart3 } from 'lucide-react';
+import { StageBadge } from './StageBadge';
 
 interface ToolCardProps {
   data: {
@@ -12,6 +13,7 @@ interface ToolCardProps {
     action?: string;
     icon: string;
   };
+  stage?: { name: string; icon: string };
 }
 
 const ICON_MAP: Record<string, React.ReactNode> = {
@@ -23,7 +25,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   chart: <BarChart3 size={18} />,
 };
 
-export default function ToolCard({ data }: ToolCardProps) {
+export default function ToolCard({ data, stage }: ToolCardProps) {
   const icon = ICON_MAP[data.icon] || <Search size={18} />;
 
   return (
@@ -38,7 +40,10 @@ export default function ToolCard({ data }: ToolCardProps) {
           {icon}
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-display font-bold text-sm text-[var(--text)]">{data.name}</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="font-display font-bold text-sm text-[var(--text)]">{data.name}</h4>
+            {stage && <StageBadge stageName={stage.name} stageIcon={stage.icon} />}
+          </div>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5 line-clamp-1">{data.description}</p>
         </div>
         <a

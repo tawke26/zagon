@@ -1,7 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Paintbrush, ArrowRight } from 'lucide-react';
+import { Paintbrush } from 'lucide-react';
+import { StageBadge } from './StageBadge';
+import { NextStepBanner } from './NextStepBanner';
 
 interface ColorItem {
   hex: string;
@@ -20,9 +22,10 @@ interface BrandBoardProps {
     tagline: string;
     next_step?: string;
   };
+  stage?: { name: string; icon: string };
 }
 
-export default function BrandBoard({ data }: BrandBoardProps) {
+export default function BrandBoard({ data, stage }: BrandBoardProps) {
   const names = data.names || data.name_options || [];
   const toneWords = data.tone || data.tone_words || [];
   const fontName = data.font || data.font_suggestion || '';
@@ -41,6 +44,11 @@ export default function BrandBoard({ data }: BrandBoardProps) {
           <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">
             Brand Board
           </span>
+          {stage && (
+            <div className="ml-auto">
+              <StageBadge stageName={stage.name} stageIcon={stage.icon} />
+            </div>
+          )}
         </div>
 
         {names.length > 0 && (
@@ -87,15 +95,7 @@ export default function BrandBoard({ data }: BrandBoardProps) {
           &ldquo;{data.tagline}&rdquo;
         </p>
 
-        {data.next_step && (
-          <div className="flex items-start gap-2 bg-[var(--accent-dim)] rounded-xl p-3">
-            <ArrowRight size={14} className="text-[var(--zagon-accent)] mt-0.5 shrink-0" />
-            <div>
-              <span className="font-mono text-[10px] uppercase text-[var(--zagon-accent)] font-bold">Your next step</span>
-              <p className="text-xs text-[var(--text)] mt-0.5">{data.next_step}</p>
-            </div>
-          </div>
-        )}
+        {data.next_step && <NextStepBanner step={data.next_step} />}
       </div>
     </motion.div>
   );

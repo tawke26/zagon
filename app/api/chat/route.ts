@@ -1,6 +1,6 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { streamText } from 'ai';
-import { SYSTEM_PROMPT } from '@/lib/system-prompt';
+import { SYSTEM_PROMPT, getExperienceLevelSection } from '@/lib/system-prompt';
 
 const openrouter = createOpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
@@ -31,13 +31,15 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const messages = normalizeMessages(body.messages || []);
+    const experienceLevel = body.experienceLevel || '';
 
-    console.log('[CHAT API] Messages count:', messages.length);
-    console.log('[CHAT API] Messages:', JSON.stringify(messages.map(m => ({ role: m.role, content: m.content.substring(0, 50) }))));
+    const systemPrompt = SYSTEM_PROMPT + getExperienceLevelSection(experienceLevel);
+
+    console.log('[CHAT API] Messages count:', messages.length, 'Experience:', experienceLevel);
 
     const result = streamText({
       model: openrouter.chat('arcee-ai/trinity-mini:free'),
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages,
     });
 

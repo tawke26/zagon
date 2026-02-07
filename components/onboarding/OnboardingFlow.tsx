@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { OnboardingData } from '@/lib/types';
+import { OnboardingData, ExperienceLevel } from '@/lib/types';
 import { StepIndicator } from './StepIndicator';
 import { NameStep } from './NameStep';
 import { CategoryStep } from './CategoryStep';
+import { ExperienceStep } from './ExperienceStep';
 import { JourneyStep } from './JourneyStep';
 
 interface OnboardingFlowProps {
@@ -16,6 +17,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [step, setStep] = useState(0);
   const [userName, setUserName] = useState('');
   const [ideaCategory, setIdeaCategory] = useState<string | null>(null);
+  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | null>(null);
 
   return (
     <div className="h-screen w-screen bg-[var(--bg)] relative overflow-hidden">
@@ -25,7 +27,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       </div>
 
       {/* Step indicator */}
-      <StepIndicator current={step} total={3} />
+      <StepIndicator current={step} total={4} />
 
       {/* Steps */}
       <AnimatePresence mode="wait">
@@ -50,10 +52,20 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           />
         )}
         {step === 2 && (
+          <ExperienceStep
+            key="experience"
+            userName={userName}
+            onNext={(level) => {
+              setExperienceLevel(level);
+              setStep(3);
+            }}
+          />
+        )}
+        {step === 3 && (
           <JourneyStep
             key="journey"
             userName={userName}
-            onComplete={() => onComplete({ userName, ideaCategory })}
+            onComplete={() => onComplete({ userName, ideaCategory, experienceLevel })}
           />
         )}
       </AnimatePresence>

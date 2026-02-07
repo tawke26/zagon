@@ -102,9 +102,12 @@ export interface ToolRecommendationData {
   icon: string;
 }
 
+export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
+
 export interface OnboardingData {
   userName: string;
   ideaCategory: string | null;
+  experienceLevel: ExperienceLevel | null;
 }
 
 export interface AppState {

@@ -1,7 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Rocket, ExternalLink, ArrowRight } from 'lucide-react';
+import { Rocket, ExternalLink } from 'lucide-react';
+import { StageBadge } from './StageBadge';
+import { NextStepBanner } from './NextStepBanner';
 
 interface PrototypeCardProps {
   data: {
@@ -14,9 +16,10 @@ interface PrototypeCardProps {
     tests?: string;
     next_step?: string;
   };
+  stage?: { name: string; icon: string };
 }
 
-export default function PrototypeCard({ data }: PrototypeCardProps) {
+export default function PrototypeCard({ data, stage }: PrototypeCardProps) {
   const ctaText = data.cta_text || data.cta || 'Get Started';
   const testsText = data.what_it_tests || data.tests || '';
 
@@ -32,6 +35,11 @@ export default function PrototypeCard({ data }: PrototypeCardProps) {
         <div className="flex items-center gap-2">
           <Rocket size={16} className="text-[var(--zagon-accent)]" />
           <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">Prototype</span>
+          {stage && (
+            <div className="ml-auto">
+              <StageBadge stageName={stage.name} stageIcon={stage.icon} />
+            </div>
+          )}
         </div>
 
         <div className="bg-[var(--bg)] rounded-xl p-4 border border-[var(--zagon-border)] space-y-3">
@@ -54,20 +62,12 @@ export default function PrototypeCard({ data }: PrototypeCardProps) {
 
         {testsText && (
           <div className="bg-[var(--bg)] rounded-xl p-3 border border-[var(--zagon-border)]">
-            <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">What this tests</span>
+            <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">What you're testing</span>
             <p className="text-xs text-[var(--text-secondary)] mt-1">{testsText}</p>
           </div>
         )}
 
-        {data.next_step && (
-          <div className="flex items-start gap-2 bg-[var(--accent-dim)] rounded-xl p-3">
-            <ArrowRight size={14} className="text-[var(--zagon-accent)] mt-0.5 shrink-0" />
-            <div>
-              <span className="font-mono text-[10px] uppercase text-[var(--zagon-accent)] font-bold">Your next step</span>
-              <p className="text-xs text-[var(--text)] mt-0.5">{data.next_step}</p>
-            </div>
-          </div>
-        )}
+        {data.next_step && <NextStepBanner step={data.next_step} />}
       </div>
     </motion.div>
   );

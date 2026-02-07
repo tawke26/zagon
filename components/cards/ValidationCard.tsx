@@ -1,7 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FlaskConical, ArrowRight } from 'lucide-react';
+import { FlaskConical } from 'lucide-react';
+import { StageBadge } from './StageBadge';
+import { NextStepBanner } from './NextStepBanner';
 
 interface Feedback {
   quote: string;
@@ -16,6 +18,7 @@ interface ValidationCardProps {
     recommendation: string;
     next_step?: string;
   };
+  stage?: { name: string; icon: string };
 }
 
 const SENTIMENT_DOT: Record<string, string> = {
@@ -24,8 +27,10 @@ const SENTIMENT_DOT: Record<string, string> = {
   neutral: 'bg-[var(--text-dim)]',
 };
 
-export default function ValidationCard({ data }: ValidationCardProps) {
+export default function ValidationCard({ data, stage }: ValidationCardProps) {
   const patterns = Array.isArray(data.patterns) ? data.patterns : [data.patterns];
+  const visibleFeedback = data.feedback.slice(0, 2);
+  const hiddenFeedback = data.feedback.length - 2;
 
   return (
     <motion.div
@@ -40,6 +45,7 @@ export default function ValidationCard({ data }: ValidationCardProps) {
           <div className="flex items-center gap-2">
             <FlaskConical size={16} className="text-[var(--success)]" />
             <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">Validation</span>
+            {stage && <StageBadge stageName={stage.name} stageIcon={stage.icon} />}
           </div>
           <div className="flex items-baseline gap-1">
             <span className="font-mono text-2xl font-bold text-[var(--zagon-accent)]">{data.people_tested}</span>
@@ -47,8 +53,10 @@ export default function ValidationCard({ data }: ValidationCardProps) {
           </div>
         </div>
 
+        <p className="text-sm text-[var(--text)] font-medium leading-relaxed">{data.recommendation}</p>
+
         <div className="space-y-1.5">
-          {data.feedback.map((item, i) => (
+          {visibleFeedback.map((item, i) => (
             <div key={i} className="flex items-start gap-2 bg-[var(--bg)] rounded-lg px-3 py-2">
               <div className={`mt-1.5 w-2 h-2 shrink-0 rounded-full ${SENTIMENT_DOT[item.sentiment] || SENTIMENT_DOT.neutral}`} />
               <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
@@ -56,6 +64,11 @@ export default function ValidationCard({ data }: ValidationCardProps) {
               </p>
             </div>
           ))}
+          {hiddenFeedback > 0 && (
+            <p className="font-mono text-[10px] text-[var(--text-muted)] pl-1">
+              and {hiddenFeedback} more response{hiddenFeedback !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-1.5">
@@ -64,17 +77,7 @@ export default function ValidationCard({ data }: ValidationCardProps) {
           ))}
         </div>
 
-        <p className="text-sm text-[var(--text)] font-medium">{data.recommendation}</p>
-
-        {data.next_step && (
-          <div className="flex items-start gap-2 bg-[var(--accent-dim)] rounded-xl p-3">
-            <ArrowRight size={14} className="text-[var(--zagon-accent)] mt-0.5 shrink-0" />
-            <div>
-              <span className="font-mono text-[10px] uppercase text-[var(--zagon-accent)] font-bold">Your next step</span>
-              <p className="text-xs text-[var(--text)] mt-0.5">{data.next_step}</p>
-            </div>
-          </div>
-        )}
+        {data.next_step && <NextStepBanner step={data.next_step} />}
       </div>
     </motion.div>
   );

@@ -1,7 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, ArrowRight } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { StageBadge } from './StageBadge';
+import { NextStepBanner } from './NextStepBanner';
 
 interface Evidence {
   quote: string;
@@ -17,10 +20,14 @@ interface ResearchWallProps {
     evidence?: Evidence[];
     next_step?: string;
   };
+  stage?: { name: string; icon: string };
 }
 
-export default function ResearchWall({ data }: ResearchWallProps) {
+export default function ResearchWall({ data, stage }: ResearchWallProps) {
   const items = data.findings || data.evidence || [];
+  const [showAll, setShowAll] = useState(false);
+  const visibleItems = showAll ? items : items.slice(0, 3);
+  const hiddenCount = items.length - 3;
 
   return (
     <motion.div
@@ -31,18 +38,19 @@ export default function ResearchWall({ data }: ResearchWallProps) {
     >
       <div className="h-1 bg-[var(--success)]" />
       <div className="p-5 space-y-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Search size={16} className="text-[var(--success)]" />
           <span className="font-mono text-xs tracking-widest uppercase text-[var(--text-dim)]">
-            Research Evidence
+            What people are saying
           </span>
           <span className="ml-auto font-mono text-xs text-[var(--text-muted)]">
-            {items.length} finding{items.length !== 1 ? 's' : ''}
+            {items.length} found
           </span>
+          {stage && <StageBadge stageName={stage.name} stageIcon={stage.icon} />}
         </div>
 
         <div className="space-y-2">
-          {items.map((item, i) => {
+          {visibleItems.map((item, i) => {
             const supports = item.supports_idea !== false && item.type !== 'contradicts';
             return (
               <motion.div
@@ -70,15 +78,16 @@ export default function ResearchWall({ data }: ResearchWallProps) {
           })}
         </div>
 
-        {data.next_step && (
-          <div className="flex items-start gap-2 bg-[var(--accent-dim)] rounded-xl p-3">
-            <ArrowRight size={14} className="text-[var(--zagon-accent)] mt-0.5 shrink-0" />
-            <div>
-              <span className="font-mono text-[10px] uppercase text-[var(--zagon-accent)] font-bold">Your next step</span>
-              <p className="text-xs text-[var(--text)] mt-0.5">{data.next_step}</p>
-            </div>
-          </div>
+        {!showAll && hiddenCount > 0 && (
+          <button
+            onClick={() => setShowAll(true)}
+            className="font-mono text-xs text-[var(--zagon-accent)] hover:underline cursor-pointer"
+          >
+            Show {hiddenCount} more
+          </button>
         )}
+
+        {data.next_step && <NextStepBanner step={data.next_step} />}
       </div>
     </motion.div>
   );
