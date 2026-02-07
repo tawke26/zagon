@@ -6,11 +6,13 @@ import { TextStreamChatTransport } from 'ai';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { parseAIResponse } from '@/lib/parse-cards';
-import { MentorMood, ParsedCard, OnboardingData, QuickOption } from '@/lib/types';
+import { MentorMood, ParsedCard, TaskItem, OnboardingData, QuickOption } from '@/lib/types';
 import { Sparkles } from 'lucide-react';
 
 interface ChatPanelProps {
   onCardsGenerated: (cards: ParsedCard[]) => void;
+  onTasksGenerated: (tasks: TaskItem[]) => void;
+  onStageSignal: (stage: string) => void;
   mentorMood: MentorMood;
   onboardingData?: OnboardingData;
 }
@@ -39,7 +41,13 @@ function buildWelcomeMessage(data?: OnboardingData): string {
   return msg;
 }
 
-export function ChatPanel({ onCardsGenerated, mentorMood, onboardingData }: ChatPanelProps) {
+export function ChatPanel({
+  onCardsGenerated,
+  onTasksGenerated,
+  onStageSignal,
+  mentorMood,
+  onboardingData,
+}: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const processedIds = useRef<Set<string>>(new Set());
 
@@ -70,31 +78,36 @@ export function ChatPanel({ onCardsGenerated, mentorMood, onboardingData }: Chat
 
   const isLoading = status === 'submitted' || status === 'streaming';
 
-  // Parse cards from completed AI messages
+  // Parse cards, tasks, and stage signals from completed AI messages
   useEffect(() => {
     if (isLoading) return; // Wait until streaming is done
-
-    // Count user messages (excluding welcome)
-    const userMessageCount = messages.filter((m) => (m.role as string) === 'user').length;
 
     messages.forEach((msg) => {
       if (msg.role === 'assistant' && !processedIds.current.has(msg.id)) {
         const text = getTextFromParts(msg.parts as Array<{ type: string; text?: string }>);
-        const { cards } = parseAIResponse(text);
+        const { cards, tasks, stageSignal } = parseAIResponse(text);
 
-        // Allow business_model cards through early, suppress others until 3+ user messages
-        const allowedCards =
-          userMessageCount < 3
-            ? cards.filter((c) => c.type === 'business_model')
-            : cards;
-
-        if (allowedCards.length > 0) {
-          processedIds.current.add(msg.id);
-          onCardsGenerated(allowedCards);
+        // Only process business_model cards (other card types removed)
+        const bmCards = cards.filter((c) => c.type === 'business_model');
+        if (bmCards.length > 0) {
+          onCardsGenerated(bmCards);
         }
+
+        // Dispatch tasks
+        if (tasks.length > 0) {
+          onTasksGenerated(tasks);
+        }
+
+        // Signal stage advancement
+        if (stageSignal) {
+          onStageSignal(stageSignal);
+        }
+
+        // Mark as processed (even if no cards/tasks, to avoid re-processing)
+        processedIds.current.add(msg.id);
       }
     });
-  }, [messages, isLoading, onCardsGenerated]);
+  }, [messages, isLoading, onCardsGenerated, onTasksGenerated, onStageSignal]);
 
   // Auto-scroll
   useEffect(() => {
@@ -107,7 +120,7 @@ export function ChatPanel({ onCardsGenerated, mentorMood, onboardingData }: Chat
     sendMessage({ text });
   };
 
-  // Get display text and options for a message (strips card and options blocks)
+  // Get display text and options for a message (strips card, task, stage, and options blocks)
   const getDisplayAndOptions = (
     parts: Array<{ type: string; text?: string }>
   ): { text: string; options: QuickOption[] } => {

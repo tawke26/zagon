@@ -41,6 +41,16 @@ const CANONICAL_TITLES = [
   'What it costs',
 ];
 
+// Descriptions for the intro explainer (shown when canvas is empty)
+const BLOCK_DESCRIPTIONS: Record<string, string> = {
+  'What you offer': 'The product or service you\'re creating and why it matters',
+  'Who buys it': 'Your target customer — who has the problem you\'re solving',
+  'How they find you': 'Social media, word of mouth, ads, partnerships...',
+  'How you make money': 'Subscriptions, one-time sales, freemium, ads...',
+  'What you do': 'Key activities to build and deliver your product',
+  'What it costs': 'Time, money, tools, and resources you need',
+};
+
 export default function BusinessCanvas({ data, stage }: BusinessCanvasProps) {
   // Build filled blocks from data
   const filledBlocks: Block[] = data.blocks ? [...data.blocks] : [];
@@ -83,30 +93,30 @@ export default function BusinessCanvas({ data, stage }: BusinessCanvasProps) {
       {/* Accent left border strip */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[var(--zagon-accent)] via-[var(--zagon-accent)]/40 to-transparent" />
 
-      <div className="pl-5 pr-5 py-5 space-y-4">
+      <div className="p-6 space-y-4">
         {/* Header */}
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-[var(--accent-dim)] flex items-center justify-center">
-            <BarChart3 size={14} className="text-[var(--zagon-accent)]" />
+          <div className="w-8 h-8 rounded-lg bg-[var(--accent-dim)] flex items-center justify-center">
+            <BarChart3 size={16} className="text-[var(--zagon-accent)]" />
           </div>
-          <span className="font-display font-bold text-sm text-[var(--text)]">
+          <span className="font-display font-bold text-lg text-[var(--text)]">
             Business Model
           </span>
           {/* Progress dots */}
-          <div className="flex items-center gap-1 ml-1">
+          <div className="flex items-center gap-1.5 ml-1">
             {CANONICAL_TITLES.map((title, i) => {
               const block = filledMap.get(title.toLowerCase());
               const isFilled = block && block.content;
               return (
                 <div
                   key={i}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                  className={`w-2 h-2 rounded-full transition-colors ${
                     isFilled ? 'bg-[var(--zagon-accent)]' : 'bg-[var(--zagon-border)]'
                   }`}
                 />
               );
             })}
-            <span className="font-mono text-[10px] text-[var(--text-dim)] ml-1">
+            <span className="font-mono text-xs text-[var(--text-dim)] ml-1">
               {filledCount}/{totalCount}
             </span>
           </div>
@@ -117,17 +127,32 @@ export default function BusinessCanvas({ data, stage }: BusinessCanvasProps) {
           )}
         </div>
 
-        {/* Empty state */}
+        {/* Intro explainer when empty */}
         {isEmpty && (
-          <div className="text-center py-3">
-            <p className="text-sm text-[var(--text-dim)]">
-              Your business model will take shape as you talk
+          <div className="space-y-3">
+            <p className="text-sm text-[var(--text-secondary)]">
+              This canvas captures the 6 key pieces of your startup idea. It fills in automatically as you talk with your mentor.
             </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {CANONICAL_TITLES.map((title) => (
+                <div
+                  key={title}
+                  className="rounded-xl p-4 border border-dashed border-[var(--zagon-border)] opacity-60"
+                >
+                  <span className="font-mono text-xs uppercase text-[var(--text-dim)] font-bold">
+                    {title}
+                  </span>
+                  <p className="text-xs text-[var(--text-dim)] mt-1.5 leading-relaxed">
+                    {BLOCK_DESCRIPTIONS[title]}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Blocks grid — show all 6 canonical slots */}
-        <div className="grid grid-cols-2 gap-2">
+        {!isEmpty && <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <AnimatePresence mode="popLayout">
             {CANONICAL_TITLES.map((title) => {
               const block = filledMap.get(title.toLowerCase());
@@ -142,20 +167,20 @@ export default function BusinessCanvas({ data, stage }: BusinessCanvasProps) {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    className="bg-[var(--bg)] rounded-xl p-3 space-y-1.5 border border-[var(--zagon-border)]"
+                    className="bg-[var(--bg)] rounded-xl p-4 space-y-2 border border-[var(--zagon-border)]"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">
+                      <span className="font-mono text-xs uppercase text-[var(--text-dim)]">
                         {block.title}
                       </span>
                       <span
-                        className="font-mono text-[9px] px-1.5 py-0.5 rounded"
+                        className="font-mono text-[11px] px-2 py-0.5 rounded"
                         style={{ backgroundColor: style.bg, color: style.text }}
                       >
                         {style.label}
                       </span>
                     </div>
-                    <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                    <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                       {block.content}
                     </p>
                   </motion.div>
@@ -167,9 +192,9 @@ export default function BusinessCanvas({ data, stage }: BusinessCanvasProps) {
                 <motion.div
                   key={title}
                   layoutId={title}
-                  className="rounded-xl p-3 border border-dashed border-[var(--zagon-border)] opacity-30"
+                  className="rounded-xl p-4 border border-dashed border-[var(--zagon-border)] opacity-30"
                 >
-                  <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">
+                  <span className="font-mono text-xs uppercase text-[var(--text-dim)]">
                     {title}
                   </span>
                 </motion.div>
@@ -191,26 +216,26 @@ export default function BusinessCanvas({ data, stage }: BusinessCanvasProps) {
                   key={`extra-${i}`}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="bg-[var(--bg)] rounded-xl p-3 space-y-1.5 border border-[var(--zagon-border)]"
+                  className="bg-[var(--bg)] rounded-xl p-4 space-y-2 border border-[var(--zagon-border)]"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] uppercase text-[var(--text-dim)]">
+                    <span className="font-mono text-xs uppercase text-[var(--text-dim)]">
                       {block.title}
                     </span>
                     <span
-                      className="font-mono text-[9px] px-1.5 py-0.5 rounded"
+                      className="font-mono text-[11px] px-2 py-0.5 rounded"
                       style={{ backgroundColor: style.bg, color: style.text }}
                     >
                       {style.label}
                     </span>
                   </div>
-                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                     {block.content}
                   </p>
                 </motion.div>
               );
             })}
-        </div>
+        </div>}
 
         {data.next_step && !isEmpty && <NextStepBanner step={data.next_step} />}
       </div>

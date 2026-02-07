@@ -22,8 +22,8 @@ export function StageBadge({ stageName, stageIcon }: StageBadgeProps) {
 
   return (
     <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent-dim)] border border-[var(--zagon-accent)]/20">
-      {Icon && <Icon size={10} className="text-[var(--zagon-accent)]" />}
-      <span className="font-mono text-[9px] uppercase tracking-wider text-[var(--zagon-accent)] font-bold">
+      {Icon && <Icon size={12} className="text-[var(--zagon-accent)]" />}
+      <span className="font-mono text-[11px] uppercase tracking-wider text-[var(--zagon-accent)] font-bold">
         {stageName}
       </span>
     </div>

@@ -6,8 +6,9 @@ import { LandingPage } from '@/components/landing/LandingPage';
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import { WorkspacePanel } from '@/components/workspace/WorkspacePanel';
-import { AppState, AppAction, ParsedCard, OnboardingData } from '@/lib/types';
+import { AppState, AppAction, ParsedCard, TaskItem, OnboardingData } from '@/lib/types';
 import { mergeBusinessModelCards } from '@/lib/merge-business-model';
+import { STAGES } from '@/lib/stages';
 
 const initialState: AppState = {
   stage: 'spark',
@@ -20,6 +21,7 @@ const initialState: AppState = {
       },
     },
   ],
+  tasks: [],
   mentorMood: 'thinking',
   isLoading: false,
   started: false,
@@ -58,6 +60,19 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
       return { ...state, cards: [...updatedCards, ...cardsToAppend] };
     }
+    case 'ADD_TASKS': {
+      // Deduplicate by task text (case-insensitive)
+      const existingTexts = new Set(state.tasks.map((t) => t.text.toLowerCase()));
+      const newTasks = action.tasks.filter((t) => !existingTexts.has(t.text.toLowerCase()));
+      return { ...state, tasks: [...state.tasks, ...newTasks] };
+    }
+    case 'TOGGLE_TASK':
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.taskId ? { ...t, done: !t.done } : t
+        ),
+      };
     case 'SET_MOOD':
       return { ...state, mentorMood: action.mood };
     case 'SET_LOADING':
@@ -81,23 +96,27 @@ export default function Home() {
 
   const handleCardsGenerated = useCallback((cards: ParsedCard[]) => {
     dispatch({ type: 'ADD_CARDS', cards });
-
-    const stageMap: Record<string, string> = {
-      problem_statement: 'hunt',
-      research_evidence: 'who',
-      persona: 'shape',
-      // business_model is excluded — it can come at any stage and shouldn't force-advance
-      brand_board: 'build',
-      prototype: 'test',
-      validation: 'test',
-    };
-
-    for (const card of cards) {
-      if (stageMap[card.type]) {
-        dispatch({ type: 'SET_STAGE', stage: stageMap[card.type] });
-      }
-    }
   }, []);
+
+  const handleTasksGenerated = useCallback((tasks: TaskItem[]) => {
+    dispatch({ type: 'ADD_TASKS', tasks });
+  }, []);
+
+  const handleToggleTask = useCallback((taskId: string) => {
+    dispatch({ type: 'TOGGLE_TASK', taskId });
+  }, []);
+
+  const handleStageSignal = useCallback(
+    (stage: string) => {
+      const stageIndex = STAGES.findIndex((s) => s.id === stage);
+      const currentIndex = STAGES.findIndex((s) => s.id === state.stage);
+      // Only advance forward, never backward
+      if (stageIndex > currentIndex) {
+        dispatch({ type: 'SET_STAGE', stage });
+      }
+    },
+    [state.stage]
+  );
 
   // Determine which phase to show
   const phase = !state.started
@@ -160,7 +179,7 @@ export default function Home() {
                 }`}
               >
                 WORKSPACE
-                {state.cards.length > 0 && (
+                {(state.cards.length > 0 || state.tasks.length > 0) && (
                   <span className="absolute top-2 right-[calc(50%-30px)] w-2 h-2 rounded-full bg-[var(--zagon-accent)]" />
                 )}
               </button>
@@ -180,6 +199,8 @@ export default function Home() {
                 <div className="w-full">
                   <ChatPanel
                     onCardsGenerated={handleCardsGenerated}
+                    onTasksGenerated={handleTasksGenerated}
+                    onStageSignal={handleStageSignal}
                     mentorMood={state.mentorMood}
                     onboardingData={state.onboardingData}
                   />
@@ -198,7 +219,9 @@ export default function Home() {
                 <div className="w-full">
                   <WorkspacePanel
                     cards={state.cards}
+                    tasks={state.tasks}
                     currentStage={state.stage}
+                    onToggleTask={handleToggleTask}
                   />
                 </div>
               </motion.div>
