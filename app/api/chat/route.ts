@@ -5,6 +5,7 @@ import { SYSTEM_PROMPT } from '@/lib/system-prompt';
 const openrouter = createOpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: process.env.OPENROUTER_API_KEY,
+  compatibility: 'compatible', // Force /chat/completions instead of /responses
 });
 
 // Convert UI SDK v6 parts-based messages to standard { role, content } format
@@ -32,6 +33,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     const messages = normalizeMessages(body.messages || []);
 
+    console.log('[CHAT API] Messages count:', messages.length);
+    console.log('[CHAT API] Messages:', JSON.stringify(messages.map(m => ({ role: m.role, content: m.content.substring(0, 50) }))));
+
     const result = streamText({
       model: openrouter('arcee-ai/trinity-mini:free'),
       system: SYSTEM_PROMPT,
@@ -40,7 +44,7 @@ export async function POST(req: Request) {
 
     return result.toTextStreamResponse();
   } catch (error) {
-    console.error('Chat API error:', error);
+    console.error('[CHAT API] Error:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to process chat request' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
